@@ -2,6 +2,6 @@
 
 namespace PetLib {
 
-    typedef unsigned int uint;   
+    typedef unsigned int size_t;   
 
 }; //PetLib
