@@ -1,71 +1,91 @@
-#pragma
+#pragma once
 
 #include "CType.h"
 
 namespace PetLib{
     
-    template< class Elem, size_t N >
+
+    template< class Elem >
     class Alloc{
 
     public:
         
+    Alloc() {}
 
-                    Alloc( const Alloc& ) = delete;
-                    Alloc()                                                                     { this->allocate(); }
-                    Alloc( Alloc&& RAlloc ) : m_data( RAlloc.m_data ), alloc( RAlloc.alloc )    
+    Alloc( const Alloc& ) = delete;
+
+    explicit Alloc( size_t size ) { this->allocate( size ); }
+
+    Alloc( Alloc&& RAlloc ) : m_data( RAlloc.m_data ), m_size( RAlloc.m_size )
     { 
-        RAlloc.m_data = nullptr; 
-        RAlloc.alloc = false;
+        RAlloc.m_data = nullptr;
+        RAlloc.m_size = 0;
     }
 
-                    ~Alloc()                                                                    { this->deallocate(); }
+    ~Alloc() { this->deallocate(); }
 
-    Alloc&          operator=( const Alloc& ) = delete;
-    Alloc&          operator=( Alloc&& RAlloc )
+
+    Alloc& operator=( const Alloc& ) = delete;
+
+    Alloc& operator=( Alloc&& RAlloc )
     {
         this->deallocate();
 
         m_data = RAlloc.m_data;
-        alloc = RAlloc.alloc;
+        m_size = RAlloc.m_size;
 
         RAlloc.m_data = nullptr;
-        RAlloc.alloc = false;
+        RAlloc.m_size = 0;
 
         return *this;
     }
+
     
-    Elem*           adress()                                                                    { return m_data; }
-    const Elem*     adress() const                                                              { return m_data; }
-        
-    size_t          size() const                                                                { return N; }
+    Elem* adress() { return m_data; }
+
+    const Elem* adress() const { return m_data; }          
+          
+    size_t size() const { return m_size; }
+
 
     //core-function
-    void            allocate( size_t size = N )                                         
+    void allocate( size_t size = MinMemBlock )                                         
     { 
-        if( !alloc) m_data = new Elem[size];
-        alloc = true;
+        deallocate();
+
+        if( !m_size )
+        {
+            m_data = new Elem[size];
+            m_size = size;
+        }
     }
-    void            deallocate()                                                        
+
+    void deallocate()                                                        
     { 
-        if( alloc ) 
+        if( m_size )
         {
             delete[] m_data;
-            alloc = false;
+            m_size = 0;
         }        
     }
-    void            construct( const Elem& RE)                                          
+
+    void construct( const Elem& RE)                                          
     { 
-        if( !alloc ) this->allocate();
+        if( !m_size ) this->allocate();
         new( m_data ) Elem( RE );
     }
-    void            destroy()                                                           
+
+    void destroy()                                                           
     { 
-        if( alloc ) m_data->~Elem();  
+        if( m_size ) m_data->~Elem();
     }
+
 
     private:
 
-        bool alloc = false;
-        Elem* m_data;
-    };    
+        size_t m_size = 0;
+        Elem* m_data = nullptr;
+    };  
+    
+
 }; //PetLib

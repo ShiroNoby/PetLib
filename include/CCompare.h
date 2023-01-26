@@ -1,8 +1,9 @@
-#pragma
+#pragma once
 
 #include "CType.h"
 
 namespace PetLib {
+
 
     //////////////////////////////////////////
     // LT < RT          return -1
@@ -27,5 +28,6 @@ namespace PetLib {
 
         return 0;                       // left == right | 0
     }
+
 
 }; //PetLib
